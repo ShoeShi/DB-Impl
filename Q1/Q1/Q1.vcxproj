@@ -119,11 +119,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BPTree.cpp" />
     <ClCompile Include="q1.cpp" />
-    <ClCompile Include="src\BPTree.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\BPTree.hpp" />
+    <ClInclude Include="BPTree.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

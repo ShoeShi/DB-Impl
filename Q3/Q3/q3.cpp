@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cmath>
 
 #include <iostream>
 #include <fstream>
@@ -52,14 +53,14 @@ int main( int argc, char **argv ) {
 			}
 
 			if( i == 0 ) {
-				t1PerPage = std::stoi( words[2] );
+				t1PerPage = atoi( words[2].c_str() );
 
 				if( t1PerPage <= 0 ){
 					std::cout << "Invalid tuples per page on line " << i << std::endl;
 					return EXIT_SUCCESS;
 				}
 			} else {
-				t2PerPage = std::stoi( words[2] );
+				t2PerPage = atoi( words[2].c_str() );
 
 				if( t2PerPage <= 0 ){
 					std::cout << "Invalid tuples per page on line " << i << std::endl;
@@ -76,8 +77,8 @@ int main( int argc, char **argv ) {
 				return EXIT_SUCCESS;
 			}
 
-			t1Column = std::stoi( words[2] );
-			t2Column = std::stoi( words[3] );
+			t1Column = atoi( words[2].c_str() );
+			t2Column = atoi( words[3].c_str() );
 
 			if( t1Column <= 0 || t2Column <= 0 ) {
 				std::cout << "Invalid columns on line " << i << std::endl;
@@ -92,7 +93,7 @@ int main( int argc, char **argv ) {
 				return EXIT_SUCCESS;
 			}
 
-			numBuffers = stoi( words[1] );
+			numBuffers = atoi( words[1].c_str() );
 
 			if( numBuffers <= 2 ) {
 				std::cout << "Invalid number of buffers on line " << i << std::endl;
@@ -142,9 +143,9 @@ int main( int argc, char **argv ) {
 
 	t2Temp.close();
 
-	std::size_t t1Pages = std::ceil( ( double )t1NumLines / ( double )t1PerPage );
-	std::size_t t2Pages = std::ceil( ( double )t2NumLines / ( double )t2PerPage );
-	std::size_t numChunks = std::ceil( ( double )t1Pages / ( double )numOuterBuffers );
+	std::size_t t1Pages = ceil( ( double )t1NumLines / ( double )t1PerPage );
+	std::size_t t2Pages = ceil( ( double )t2NumLines / ( double )t2PerPage );
+	std::size_t numChunks = ceil( ( double )t1Pages / ( double )numOuterBuffers );
 
 	std::cout << "With page size=" << t1PerPage << " records per page, N1=" << t1NumLines << " records in " << t1File << " can fit into P1=" << t1Pages << " pages." << std::endl;
 	std::cout << "With page size=" << t2PerPage << " records per page, N2=" << t2NumLines << " records in " << t2File << " can fit into P1=" << t2Pages << " pages." << std::endl;
@@ -202,9 +203,9 @@ int main( int argc, char **argv ) {
 							rElems.push_back( buffer );
 						}
 
-						splitter = std::stringstream( *s );
+						std::stringstream splitter2( *s );
 
-						while( splitter >> buffer ) {
+						while( splitter2 >> buffer ) {
 							sElems.push_back( buffer );
 						}
 

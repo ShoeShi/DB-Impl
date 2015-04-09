@@ -20,12 +20,18 @@ $RECYCLE.BIN/
 # Visual Studio Stuff
 
 Debug
+Release
 x64
 obj
 *.user
 *.sdf
 *.suo
 *.opensdf
+
+# GNU Stuff
+
+*.exe
+*.o
 
 # =========================
 # Operating System Files

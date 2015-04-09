@@ -17,7 +17,7 @@ int main( int argc, char** argv ) {
 		return EXIT_SUCCESS;
 	}
 
-	auto d = std::stoi( argv[1] );
+	auto d = atoi( argv[1] );
 
 	Q1::BPTree tree( d );
 	
@@ -41,10 +41,10 @@ int main( int argc, char** argv ) {
 
 		if( words.size() > 1 ) {
 			if( words[0].compare( "INSERT" ) == 0 ) {
-				int32_t data = std::stoi( words[1] );
+				int32_t data = atoi( words[1].c_str() );
 				tree.insert( data );
 			} else if( words[0].compare( "DELETE" ) == 0 ){
-				int32_t data = std::stoi( words[1] );
+				int32_t data = atoi( words[1].c_str() );
 				tree.del( data );
 			} else if( words[0].compare( "PRINT" ) == 0 ) {
 				tree.printTree();

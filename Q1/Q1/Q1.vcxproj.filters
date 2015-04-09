@@ -18,12 +18,12 @@
     <ClCompile Include="q1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\BPTree.cpp">
+    <ClCompile Include="BPTree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\BPTree.hpp">
+    <ClInclude Include="BPTree.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

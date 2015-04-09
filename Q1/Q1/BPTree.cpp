@@ -1,4 +1,4 @@
-#include <BPTree.hpp>
+#include "BPTree.hpp"
 
 #include <exception>
 #include <iostream>
@@ -26,9 +26,6 @@ void BPTree::insert( int32_t data ) {
 	//Find the leaf node where the new entry 'belongs'
 	while( ! desiredLeafNode->isLeaf() ) {
 		BPTreeIndexNode *currentIndexNode = dynamic_cast<BPTreeIndexNode *>( desiredLeafNode.get() );
-		if ( ! currentIndexNode ) {
-			throw std::exception( "Failed to cast node into index node" );
-		}
 
 		auto it = currentIndexNode->m_indexes.begin();
 		auto end = currentIndexNode->m_indexes.end();
@@ -168,9 +165,6 @@ void BPTree::del( int32_t data ) {
 
 	while( !desiredLeafNode->isLeaf() ) {
 		BPTreeIndexNode *currentIndexNode = dynamic_cast<BPTreeIndexNode *>(desiredLeafNode.get());
-		if( !currentIndexNode ) {
-			throw std::exception( "Failed to cast node into index node" );
-		}
 
 		auto it = currentIndexNode->m_indexes.begin();
 		auto end = currentIndexNode->m_indexes.end();
