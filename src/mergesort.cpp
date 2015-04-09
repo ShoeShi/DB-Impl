@@ -21,7 +21,6 @@ pass0( filename , pages, buffers){
   write(n); sort, 
   print(n);
 
-  nextBuffer;
 }
 
 passN(n)
