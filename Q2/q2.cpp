@@ -22,8 +22,8 @@ int main( int argc, char **argv ) {
     return EXIT_SUCCESS;
   }
 
-  int pageSize = atoi(argv[1]);
-  int numBuffers = atoi(argv[2]);
+  size_t pageSize = atoi(argv[1]);
+  size_t numBuffers = atoi(argv[2]);
   std::string datafile = argv[3];
 
   MergeSort* xsort = new MergeSort( pageSize, numBuffers, datafile );

@@ -1,4 +1,6 @@
 #include "mergesort.h"
+
+#include <cstdint>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -8,30 +10,31 @@
 #include <algorithm>    
 #include <math.h>     
 
-typedef std::vector<int> buffer_t;
-int MergeSort::itemsPerPage;
-int MergeSort::pagesPerBuffer;
-int MergeSort::numBuffers;
-int MergeSort::numPages;
+typedef std::vector<size_t> buffer_t;
+size_t MergeSort::itemsPerPage;
+size_t MergeSort::pagesPerBuffer;
+size_t MergeSort::numBuffers;
+size_t MergeSort::numPages;
 std::string MergeSort::filename;
 std::vector<buffer_t> MergeSort::listOfBuffers;
 
-MergeSort::MergeSort(int pageSize, int buffers, std::string filename) {
+
+//Constructor
+MergeSort::MergeSort(size_t pageSize, size_t buffers, std::string filename) {
   this->filename = filename;
   this->itemsPerPage = pageSize;
   this->numBuffers = buffers;
 }
 
+//Destructor
 MergeSort::~MergeSort(){}
 
-//read file, put ints(pages) into a buffer.
-// * There is no "page" type, but the "buffer" vector size 
-// is determined by itemsPerPage * pagesPerBuffer 
 
+//Pass 0 of the Mergesort
 void MergeSort::pass0() {
   std::string tempBuffer;
-  int numItems = 0;
-  int itemsPerBuffer = 0;
+  size_t numItems = 0;
+  size_t itemsPerBuffer = 0;
 
   //write to temporary file
   //std::ofstream f_pass0( "tmp/pass0.txt" );
@@ -50,7 +53,7 @@ void MergeSort::pass0() {
 
   //// get length of file:
   /*is.seekg (0, is.end);
-    int length = is.tellg();
+    size_t length = is.tellg();
     is.seekg (0, is.beg);*/
 
   //Counting number of data. (lines)
@@ -76,7 +79,7 @@ void MergeSort::pass0() {
     std::cout << numPages << std::endl;*/
 
   //intialize buffer list with buffers
-  for( int i = 0; i < numBuffers; i++ ) {
+  for( size_t i = 0; i < numBuffers; i++ ) {
     listOfBuffers.push_back( buffer_t() );
   }
 
@@ -86,13 +89,13 @@ void MergeSort::pass0() {
   //Read items(pages of items) into buffer and sort after read.
   std::cout << std::endl << "Pass 0" <<std::endl;
   std::stringstream output;
-  int temp;
-  for( int i = 0; i < numBuffers; i++ ) {
+  size_t temp;
+  for( size_t i = 0; i < numBuffers; i++ ) {
 
     output.str("");
     //read
     std::cout << "Read [";
-    for( int j = 0; j < itemsPerBuffer; j++ ) { 
+    for( size_t j = 0; j < itemsPerBuffer; j++ ) { 
       if(! (f_in >> temp)) break;
       output << temp << " ";  
       listOfBuffers[i].push_back(temp);
@@ -107,7 +110,7 @@ void MergeSort::pass0() {
     //Would need to be changed if OpenMP is used
     //Each buffer writes to a line in "pass.txt"
     std::cout << "Write [";
-    for( int j = 0; j < listOfBuffers[i].size(); j++ ) {
+    for( size_t j = 0; j < listOfBuffers[i].size(); j++ ) {
       f_pass0 << listOfBuffers[i][j];
       std::cout << listOfBuffers[i][j];
       if( j != listOfBuffers[i].size() - 1 ){
@@ -123,7 +126,11 @@ void MergeSort::pass0() {
   f_in.close();
 }// end pass0
 
-void MergeSort::passN(int n)
+
+
+//Recursive merge sort
+// For passes greater than 0.
+void MergeSort::passN(size_t n)
 {
   std::ostringstream s_in;
   std::ostringstream s_out;
@@ -146,6 +153,7 @@ void MergeSort::passN(int n)
   }
 
 
+  //Unrequired, but safety measure (broad estimate) 
   if(numBuffers/(pow(2, n-1)) < 1 )
     return;
 
@@ -155,8 +163,9 @@ void MergeSort::passN(int n)
   std::stringstream output;
   buffer_t a;
   buffer_t b;
-  int temp;
-  for( int i = 0; i < numBuffers/(pow(2, n-1)); i++ ) {
+  size_t temp;
+  size_t i;
+  for( i = 0; i < numBuffers/(pow(2, n-1)); i++ ) {
     listOfBuffers[i].clear();
     //read 2 lines (each line contains multiple data)
     a.clear();
@@ -192,7 +201,7 @@ void MergeSort::passN(int n)
     //Would need to be changed if OpenMP is used
     //Each buffer writes to a line in "pass.txt"
     std::cout << "Write [";
-    for( int j = 0; j < listOfBuffers[i].size() ; j++ ) {
+    for( size_t j = 0; j < listOfBuffers[i].size() ; j++ ) {
       f_out << listOfBuffers[i][j];
       std::cout << listOfBuffers[i][j];
       if( j != listOfBuffers[i].size() - 1 ){
@@ -207,18 +216,21 @@ void MergeSort::passN(int n)
   f_out.close();
   f_in.close();
 
+  //Exit if we only required 1 loop-merge to sort all items.
+  //std::cout << i << std::endl;
+  if(i == 1)
+    return;
+
+  
   passN(n+1);
 }
 
-//void MergeSort::print(){
-//}
-//
 
 //Compare the top of each vector then place into bigger vector
 buffer_t MergeSort::innerSort( buffer_t a, buffer_t b ) {
   buffer_t c; 
-  int i = 0;
-  int j = 0;
+  size_t i = 0;
+  size_t j = 0;
 
   while( i < a.size() && j < b.size() ) {
     if (a[i] < b[j]){
