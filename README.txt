@@ -18,7 +18,7 @@ Question 1
 			IMPORTANT: This requires a version of g++ which has support for C++11
 
 		Option 2:
-			Use the Microsoft Visual Studio 2013 solution is provided in Q1/
+			Use the Microsoft Visual Studio 2013 solution provided in Q1/
 			This was tested with the configuration Debug x64
 
 	To Run:
@@ -61,7 +61,7 @@ Question 3
 			IMPORTANT: This requires a version of g++ which has support for C++11
 
 		Option 2:
-			Use the Microsoft Visual Studio 2013 solution is provided in Q3/
+			Use the Microsoft Visual Studio 2013 solution provided in Q3/
 			This was tested with the configuration Debug Win32
 
 	To Run:
