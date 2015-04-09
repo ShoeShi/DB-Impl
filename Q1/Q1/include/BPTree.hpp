@@ -46,6 +46,7 @@ namespace Q1 {
 		~BPTree();
 		void insert( int32_t data );
 		void del( int32_t data );
+		void printTree();
 	};
 
 }

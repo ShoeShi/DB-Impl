@@ -1,6 +1,8 @@
 #include <BPTree.hpp>
 
 #include <exception>
+#include <iostream>
+#include <queue>
 
 using namespace Q1;
 
@@ -16,7 +18,7 @@ void BPTree::insert( int32_t data ) {
 	auto desiredLeafNode = m_root;
 
 	if( ! desiredLeafNode ) {
-		m_root = nodePtr_t( new BPTreeNode( nodePtr_t() ) );
+		m_root = nodePtr_t( new BPTreeNode( nodePtr_t( NULL ) ) );
 		m_root->m_data.push_back( data );
 		return;
 	}
@@ -31,7 +33,7 @@ void BPTree::insert( int32_t data ) {
 		auto it = currentIndexNode->m_indexes.begin();
 		auto end = currentIndexNode->m_indexes.end();
 		std::size_t currentIndex = 0;
-		for( it; it != end && currentIndexNode->m_data[currentIndex] < data; ++it, ++currentIndex );
+		for( it; it != end && currentIndex < currentIndexNode->m_data.size() && currentIndexNode->m_data[currentIndex] < data; ++it, ++currentIndex );
 
 		desiredLeafNode = currentIndexNode->m_indexes[currentIndex];
 
@@ -54,15 +56,15 @@ void BPTree::insert( int32_t data ) {
 		auto currentNode = desiredLeafNode;
 
 		//Loop until the current node is either the root, or has 2 * m_d or less entries
-		while( currentNode->m_data.size() >= twoD && !currentNode->m_parent ) {
+		while( currentNode->m_data.size() > twoD && currentNode->m_parent.get() != NULL ) {
 			BPTreeIndexNode *currentIndexNode = dynamic_cast< BPTreeIndexNode * >( currentNode.get() );
 			auto parentUncast = currentNode->m_parent;
 			BPTreeIndexNode *parent = dynamic_cast< BPTreeIndexNode * >( parentUncast.get() );
 
-			if( currentIndexNode ) {
+			if( !currentNode->isLeaf() ) {
 				//The current node is not a leaf
 
-				std::shared_ptr<BPTreeIndexNode> newSiblingIndex;
+				std::shared_ptr<BPTreeIndexNode> newSiblingIndex( new BPTreeIndexNode( currentNode->m_parent ) );
 				nodePtr_t newSibling = newSiblingIndex;
 
 				uint32_t copyUp = currentNode->m_data[m_d];
@@ -72,10 +74,11 @@ void BPTree::insert( int32_t data ) {
 				}
 				currentNode->m_data.erase( currentNode->m_data.begin() + m_d, currentNode->m_data.end() );
 
-				for( std::size_t i = m_d; i < currentIndexNode->m_indexes.size(); ++i ) {
+				for( std::size_t i = m_d + 1; i < currentIndexNode->m_indexes.size(); ++i ) {
 					newSiblingIndex->m_indexes.push_back( currentIndexNode->m_indexes[i] );
+					newSiblingIndex->m_indexes.back()->m_parent = newSibling;
 				}
-				currentIndexNode->m_indexes.erase( currentIndexNode->m_indexes.begin() + m_d, currentIndexNode->m_indexes.end() );
+				currentIndexNode->m_indexes.erase( currentIndexNode->m_indexes.begin() + ( m_d + 1 ), currentIndexNode->m_indexes.end() );
 
 				std::size_t locInParent = 0;
 
@@ -87,7 +90,7 @@ void BPTree::insert( int32_t data ) {
 			} else {
 				//The current node is a leaf
 
-				nodePtr_t newSibling;
+				nodePtr_t newSibling( new BPTreeNode( currentNode->m_parent ) );
 				for( std::size_t i = m_d; i < currentNode->m_data.size(); ++i ) {
 					newSibling->m_data.push_back( currentNode->m_data[i] );
 				}
@@ -105,29 +108,40 @@ void BPTree::insert( int32_t data ) {
 			currentNode = parentUncast;
 		}
 
-		if( !currentNode->m_parent && currentNode->m_data.size() > twoD ) {
+		//printTree();
+		//std::cout.flush();
+
+		if( currentNode == m_root && currentNode->m_data.size() > twoD ) {
 			//It appears we must split the root
 			BPTreeIndexNode *currentIndexNode = dynamic_cast< BPTreeIndexNode * >(currentNode.get());
 
 			if( currentIndexNode ) {
 				//The root is not a leaf node
-				std::shared_ptr<BPTreeIndexNode> newRoot;
+				std::shared_ptr<BPTreeIndexNode> newRoot( new BPTreeIndexNode( nodePtr_t( NULL ) ) );
 				newRoot->m_data.push_back( currentNode->m_data[m_d] );
 				newRoot->m_indexes.push_back( currentNode );
-				std::shared_ptr<BPTreeIndexNode> newSibling;
-
+				std::shared_ptr<BPTreeIndexNode> newSibling( new BPTreeIndexNode( newRoot ) );
+				BPTreeIndexNode *currentIndexNode = dynamic_cast< BPTreeIndexNode * >( currentNode.get() );
 				for( std::size_t i = m_d + 1; i < currentNode->m_data.size(); ++i ) {
 					newSibling->m_data.push_back( currentNode->m_data[i] );
+					
 				}
+
+				for( std::size_t i = m_d + 1; i < currentIndexNode->m_indexes.size(); ++i ) {
+					newSibling->m_indexes.push_back( currentIndexNode->m_indexes[i] );
+					newSibling->m_indexes.back()->m_parent = newSibling;
+				}
+
 				currentNode->m_data.erase( currentNode->m_data.begin() + m_d, currentNode->m_data.end() );
+				currentIndexNode->m_indexes.erase( currentIndexNode->m_indexes.begin() + ( m_d + 1 ), currentIndexNode->m_indexes.end() );
 				newRoot->m_indexes.push_back( newSibling );
 				m_root = newRoot;
 			} else {
 				//The root is a leaf node
-				std::shared_ptr<BPTreeIndexNode> newRoot;
+				std::shared_ptr<BPTreeIndexNode> newRoot( new BPTreeIndexNode( nodePtr_t( NULL ) ) );
 				newRoot->m_data.push_back( currentNode->m_data[m_d] );
 				newRoot->m_indexes.push_back( currentNode );
-				auto newSibling = nodePtr_t();
+				auto newSibling = nodePtr_t( new BPTreeNode( newRoot ) );
 
 				for( std::size_t i = m_d; i < currentNode->m_data.size(); ++i ) {
 					newSibling->m_data.push_back( currentNode->m_data[i] );
@@ -140,6 +154,7 @@ void BPTree::insert( int32_t data ) {
 	}
 
 }
+
 void BPTree::del( int32_t data ) {
 	auto desiredLeafNode = m_root;
 
@@ -160,7 +175,7 @@ void BPTree::del( int32_t data ) {
 		auto it = currentIndexNode->m_indexes.begin();
 		auto end = currentIndexNode->m_indexes.end();
 		std::size_t currentIndex = 0;
-		for( it; it != end && currentIndexNode->m_data[currentIndex] < data; ++it, ++currentIndex );
+		for( ; it != end && currentIndex < currentIndexNode->m_data.size() && currentIndexNode->m_data[currentIndex] <= data; ++it, ++currentIndex );
 
 		desiredLeafNode = currentIndexNode->m_indexes[currentIndex];
 
@@ -168,9 +183,9 @@ void BPTree::del( int32_t data ) {
 		
 		if( desiredLeafNode->isLeaf() ) {
 			bool found = false;
-			for( auto it = desiredLeafNode->m_data.begin(); it != desiredLeafNode->m_data.end(); ++it ) {
-				if( *it == data ) {
-					condemedIt = it;
+			for( auto it2 = desiredLeafNode->m_data.begin(); it2 != desiredLeafNode->m_data.end(); ++it2 ) {
+				if( *it2 == data ) {
+					condemedIt = it2;
 					found = true;
 				}
 			}
@@ -192,7 +207,7 @@ void BPTree::del( int32_t data ) {
 		auto it = parent->m_indexes.begin();
 		auto end = parent->m_indexes.end();
 		std::size_t currentIndex = 0;
-		for( it; it != end && parent->m_data[currentIndex] < data; ++it, ++currentIndex );
+		for( it; it != end && parent->m_data[currentIndex] <= data; ++it, ++currentIndex );
 
 		if( currentIndex > 0 ) {
 			//There's a left sibling
@@ -213,7 +228,7 @@ void BPTree::del( int32_t data ) {
 			}
 		}
 
-		if( currentIndex < parent->m_data.size() - 1 ) {
+		if( currentIndex < parent->m_data.size() ) {
 			//There's a right sibling
 			nodePtr_t siblingUncast = parent->m_indexes[currentIndex + 1];
 			if( siblingUncast->m_data.size() > m_d ) {
@@ -227,6 +242,8 @@ void BPTree::del( int32_t data ) {
 
 				currentNode->m_data.push_back( siblingUncast->m_data[0] );
 				siblingUncast->m_data.erase( siblingUncast->m_data.begin() );
+
+				parent->m_data[currentIndex] = siblingUncast->m_data[0];
 
 				return;
 			}
@@ -250,6 +267,7 @@ void BPTree::del( int32_t data ) {
 			}
 
 			parent->m_indexes.erase( parent->m_indexes.begin() + currentIndex );
+			parent->m_data.erase( parent->m_data.begin() + currentIndex );
 
 			if( !parent->m_parent && parent->m_data.size() == 0 ) {
 				//Parent is root but won't be for long
@@ -275,7 +293,8 @@ void BPTree::del( int32_t data ) {
 				currentNode->m_data.push_back( siblingUncast->m_data[i] );
 			}
 
-			parent->m_indexes.erase( parent->m_indexes.begin() + (currentIndex + 1) );
+			parent->m_indexes.erase( parent->m_indexes.begin() + ( currentIndex + 1) );
+			parent->m_data.erase( parent->m_data.begin() + ( currentIndex ) );
 
 			if( !parent->m_parent && parent->m_data.size() == 0 ) {
 				//Parent is root but won't be for long
@@ -287,8 +306,59 @@ void BPTree::del( int32_t data ) {
 		
 		currentNode = uncastParent;
 	}
+}
 
-	
+void BPTree::printTree() {
+	std::cout << "B+tree with order d=" << m_d << std::endl;
+
+	//Print the root
+	std::cout << "Root  ";
+
+	std::queue<nodePtr_t> q;
+
+	q.push( m_root );
+	q.push( nodePtr_t( NULL ) );
+
+	while( q.size() > 0 ) {
+		nodePtr_t current = q.front();
+		q.pop();
+		
+		if( current.get() == NULL ) {
+			continue;
+		}
+
+		std::cout << "[";
+
+		for( std::size_t i = 0; i < current->m_data.size(); i++ ) {
+			std::cout << current->m_data[i];
+			if( current->isLeaf() ) {
+				std::cout << "*";
+			}
+
+			if( i <= current->m_data.size() - 1 ) {
+				std::cout << " ";
+			}
+		}
+
+		std::cout << "]";
+
+		if( !current->isLeaf() ) {
+			BPTreeIndexNode *currentIndexNode = dynamic_cast< BPTreeIndexNode * >( current.get() );
+			for( std::size_t i = 0; i < currentIndexNode->m_indexes.size(); ++i ) {
+				q.push( currentIndexNode->m_indexes[i] );
+			}
+		}
+
+		if( q.size() > 0 && !q.front() ) {
+			std::cout << std::endl;
+			q.pop();
+			q.push( nodePtr_t() );
+		} else if( q.size() > 0 ) {
+			std::cout << "  ";
+		}
+	}
+
+	std::cout << std::endl;
 }
 
 BPTreeNode::BPTreeNode( BPTree::nodePtr_t parent ): m_parent( parent ) {
