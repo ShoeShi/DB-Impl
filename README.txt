@@ -4,7 +4,7 @@ Assignment 4
 Evan Spearman 	(7690987)
 Johnny Xie 		(7694754)
 
-Github Repository: https://github.com/BurningKoy/DB-Impl
+
 
 Question 1
 
